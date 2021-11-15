@@ -1,66 +1,55 @@
-from flask import Flask, render_template, url_for, request, make_response
+from flask import Flask, render_template, request, redirect, url_for
 from pymongo import MongoClient
-from datetime import datetime
-from werkzeug.utils import redirect
-
-import bcrypt
+from bson.objectid import ObjectId
 import os
+
+host = os.environ.get("DB_URL")
+client = MongoClient(host=host)
+db = client.CharityTracker
+donations = db.donations
 
 app = Flask(__name__)
 
+
 @app.route('/')
-def charity_tracker_index():
-  return render_template('new_donation.html') 
+def donate():
+    return render_template('index.html')
+
+@app.route('/charities')
+def charities():
+    return render_template('charities.html')
 
 
-@app.route('/login')
-def login_form():
-  return render_template('login.html')
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
 
-@app.route('/login', methods=['POST'])
-def login():
-  user = {
-    'email': request.form.get('email'),
-    'password': request.form.get('password')
-  }
-  print(user)
-  return render_template('new_donation.html')
+@app.route('/donate')
+def charity_index(): 
+    donates=list(donations.find())
+    for i in range(len(donates)):
+      donates[i]['amount'] = float(donates[i]['amount'])
+    donates.sort(key=lambda x: x['date'], reverse=False)
+    return render_template("charity_index.html", donations=donates)
 
-@app.route('/signup')
-def signup_form():
-  return render_template('signup.html')
+@app.route('/donations/new')
+def donation_new():
+    return render_template('donations_new.html')
 
-@app.route('/signup', methods=['POST'])
-def signup():
-  new_user = {
-    'email': request.form.get('email'),
-    'password': request.form.get('password'),
-    'confirm_password': request.form.get('confirm_password'),
-  }
-  print(new_user)
-  return render_template('login.html')
-
-@app.route('/profile')
-def donor_profile():
-  return render_template('profile.html')
-
-@app.route('/charity')
-def charity_profile():
-  return render_template('charity.html')
-
-@app.route('/donation/new')
-def track_donation():
-  return render_template('new_donation.html') 
-
-@app.route('/donation', methods=['POST'])
+@app.route('/donations', methods=['POST'])
 def donation_submit():
-  donation = {
-    'charity_name': request.form.get('charity_name'),
-    'amount_in_cents': request.form.get('donation_amount'),
-    'date': request.form.get('date_donated'),
-  }
-  print(donation)
-  return render_template('new_donation.html')
+    donation = {
+        'name': request.form.get('charity-name'),
+        'amount': request.form.get('amount'),
+        'date': request.form.get('date'),
+      }
+    donations.insert_one(donation)
+    return redirect(url_for('charity_index'))
+
+@app.route('/donations/<donation_id>/remove', methods=['POST'])
+def donation_del(donation_id):
+    donations.delete_one({'_id': ObjectId(donation_id)})
+    return redirect(url_for('charity_index'))
 
 if __name__ == '__main__':
-  app.run(debug=True, host='0.0.0.0', port=os.environ.get('PORT', 8000))
+    app.run(debug=True, port=8000)
