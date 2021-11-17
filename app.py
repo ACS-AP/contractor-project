@@ -22,7 +22,7 @@ def charities():
 
 @app.route('/contact')
 def contact():
-    return render_template('contact.html')
+    return render_template('test.html')
 
 @app.route('/donate')
 def charity_index(): 
