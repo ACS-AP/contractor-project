@@ -17,7 +17,7 @@ def donate():
 
 @app.route('/charities')
 def charities():
-    return render_template('charities.html')
+    return render_template('about.html')
 
 
 @app.route('/contact')
