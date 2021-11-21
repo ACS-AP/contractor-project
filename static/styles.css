@@ -1,5 +1,5 @@
 .hero-background-img {
-    background-image: url("ik.jpeg");
+    background-image: url("joel.jpg");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -10,7 +10,7 @@
 .hero-background-img:after {
     content: "";
     position: absolute;
-    background-image: url("ik.jpeg");
+    background-image: url("joel.jpg");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
